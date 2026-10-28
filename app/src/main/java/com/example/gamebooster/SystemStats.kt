@@ -27,16 +27,13 @@ data class SystemSnapshot(
 object SystemStats {
 
     fun read(context: Context): SystemSnapshot {
-        // RAM
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val mi = ActivityManager.MemoryInfo().also { am.getMemoryInfo(it) }
 
-        // Storage (internal)
         val stat = StatFs(Environment.getDataDirectory().path)
         val sTotal = stat.totalBytes
         val sUsed = sTotal - stat.availableBytes
 
-        // Battery
         val bat = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val level = bat?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
         val scale = bat?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
