@@ -45,6 +45,7 @@ class GameService : Service() {
     private var lastCheck = System.currentTimeMillis() - 10 * 60 * 1000L
     private var games: Set<String> = emptySet()
     private var gamesRefreshed = 0L
+    @Volatile private var proApplied = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -148,7 +149,17 @@ class GameService : Service() {
         if (activeGame != null) endGame()
         activeGame = pkg
         if (Prefs.get(this, Prefs.AUTO_BOOST, true)) {
-            scope.launch(Dispatchers.IO) { Booster.killBackground(this@GameService, pkg) }
+            if (Pro.granted()) {
+                proApplied = true
+                scope.launch(Dispatchers.IO) {
+                    Pro.forceStopAll(this@GameService, pkg)
+                    Pro.gameMode(pkg, "performance")
+                    val hz = Prefs.getInt(this@GameService, Prefs.REFRESH, 0)
+                    if (hz > 0) Pro.lockRefresh(hz)
+                }
+            } else {
+                scope.launch(Dispatchers.IO) { Booster.killBackground(this@GameService, pkg) }
+            }
         }
         if (Prefs.get(this, Prefs.AUTO_DND, false) && Booster.hasDndAccess(this) && !Booster.isDndOn(this)) {
             Booster.setDnd(this, true)
@@ -163,6 +174,11 @@ class GameService : Service() {
     private fun endGame() {
         if (activeGame == null && overlay == null) return
         hideOverlay()
+        val g = activeGame
+        if (g != null && proApplied) {
+            proApplied = false
+            Thread { Pro.restore(this, g) }.start()
+        }
         if (turnedDndOn) {
             Booster.setDnd(this, false)
             turnedDndOn = false

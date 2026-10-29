@@ -17,7 +17,10 @@ import androidx.compose.ui.Modifier
 @Composable
 fun Root() {
     var tab by remember { mutableStateOf(0) }
-    val tabs = listOf("Boost" to "⚡", "Games" to "🎮", "Clean" to "🧹", "Security" to "🛡", "Apps" to "📱")
+    val tabs = listOf(
+        "Boost" to "⚡", "Games" to "🎮", "Clean" to "🧹",
+        "Security" to "🛡", "Apps" to "📱", "Pro" to "🚀"
+    )
 
     Scaffold(
         bottomBar = {
@@ -39,7 +42,8 @@ fun Root() {
                 1 -> GamesScreen()
                 2 -> CleanScreen()
                 3 -> SecurityScreen()
-                else -> AppsScreen()
+                4 -> AppsScreen()
+                else -> ProScreen()
             }
         }
     }

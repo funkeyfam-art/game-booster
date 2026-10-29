@@ -8,6 +8,7 @@ object Prefs {
     const val AUTO_DND = "auto_dnd"
     const val OVERLAY = "overlay"
     const val THERMAL = "thermal"
+    const val REFRESH = "refresh_hz"
 
     private fun sp(c: Context) = c.getSharedPreferences("gb_prefs", Context.MODE_PRIVATE)
 
@@ -15,6 +16,12 @@ object Prefs {
 
     fun set(c: Context, key: String, value: Boolean) {
         sp(c).edit().putBoolean(key, value).apply()
+    }
+
+    fun getInt(c: Context, key: String, def: Int): Int = sp(c).getInt(key, def)
+
+    fun setInt(c: Context, key: String, value: Int) {
+        sp(c).edit().putInt(key, value).apply()
     }
 
     fun pinned(c: Context): Set<String> =
